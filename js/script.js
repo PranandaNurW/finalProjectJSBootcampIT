@@ -97,16 +97,18 @@ $(window).on("load", function () {
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
 
-function createListComponent(taskInputText){
+function createListComponent(taskInputText, checked = 0){
   // create li
   const task = document.createElement("li");
-  task.className = "list-group-item border border-light rounded border-1 p-3 mb-2";
+  task.className = checked == 1 ? "list-group-item border border-light rounded border-1 p-3 mb-2 checked" : "list-group-item border border-light rounded border-1 p-3 mb-2";
   
   // create input
   const taskCheckBox = document.createElement("input");
   taskCheckBox.type = "checkbox";
-  taskCheckBox.className = "form-check-input strikethrough";
-  
+  taskCheckBox.className = "form-check-input";
+  taskCheckBox.checked = checked == 1 ? true : false;
+  taskCheckBox.addEventListener("change", completeTask); // add checkbox eventlistener
+
   // create name
   const taskName = document.createElement("span");
   taskName.className = "task-name";
@@ -116,10 +118,8 @@ function createListComponent(taskInputText){
   const taskDeleteButton = document.createElement("button");
   taskDeleteButton.className = "btn btn-sm float-end btn-danger py-1";
   taskDeleteButton.textContent = "Delete";
+  taskDeleteButton.addEventListener("click", deleteTask); // add delete eventlistener
   
-  // add event listener to delete button
-  taskDeleteButton.addEventListener("click", deleteTask);
-
   // add input, name, button to li. then append li to ul
   [taskCheckBox, taskName, taskDeleteButton].forEach((item) => task.appendChild(item));
   taskList.appendChild(task);
@@ -127,25 +127,32 @@ function createListComponent(taskInputText){
 
 function setLocalStorageTasks() {
   const tasks = [];
-  const taskItem = taskList.getElementsByClassName("task-name"); // element span [span, span, span, span]
-
+  const taskItem = taskList.getElementsByClassName("task-name");
+  
+  
   for(let i = 0; i < taskItem.length; i++) {
-    tasks.push(taskItem[i].textContent); // span.textcontent
+    const taskItemData = {};
+    taskItemData[taskItem[i].textContent] = taskItem[i].parentElement.classList.contains("checked") ? 1 : 0;
+    tasks.push(taskItemData);
   }
 
   localStorage.setItem("tasks", JSON.stringify(tasks));
-  doc = {
-    hobi: ["hoib", "hobo"],
-  }
 }
 
 function getLocalStorageTasks(){
   const tasks = JSON.parse(localStorage.getItem("tasks"));
   if (tasks) {
-    tasks.forEach(taskText => {
-      createListComponent(taskText);
+    tasks.forEach(index => {
+      createListComponent(Object.keys(index)[0], Object.values(index)[0]);
     });
   }
+}
+
+function completeTask(event) {
+  const task = event.target.parentElement;
+  task.classList.toggle("checked");
+  
+  setLocalStorageTasks();
 }
 
 function deleteTask(event) {

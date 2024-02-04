@@ -2239,7 +2239,7 @@ textarea.form-control-lg {
           color-adjust: exact;
 }
 
-.strikethrough:checked + span{
+.checked span {
   text-decoration:line-through
 }
 
